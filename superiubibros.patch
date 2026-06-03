@@ -1,0 +1,1198 @@
+From 505a32fc0a4068acb619fd23edd0a56d73fc8d67 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Wed, 3 Jun 2026 12:10:57 +0000
+Subject: [PATCH] Add Super IUBI Bros game (index.html) and fix README links
+
+- Implement the full single-file NES-style platformer in index.html
+  (canvas rendering, physics, enemies, coins, flag, castle, HUD, touch + keyboard)
+- Add IUBI theming: collectible I-U-B-I letter badges, IUBI banner/flag,
+  IUBI-colored Mario, and IUBI facts on win/game-over screens
+- Add live WebAudio chiptune SFX (jump/coin/stomp/win) with no audio files
+- Fix broken Play badge, demo URL, clone instructions, and project structure
+  in README to point at the Super-Mario-Game-IUBI repo and index.html
+---
+ README.md  |   23 +-
+ index.html | 1086 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 1099 insertions(+), 10 deletions(-)
+ create mode 100644 index.html
+
+diff --git a/README.md b/README.md
+index 18886b0..c4bf6b4 100644
+--- a/README.md
++++ b/README.md
+@@ -5,7 +5,7 @@
+ 
+ **No engine. No frameworks. No build step. One single HTML file.**
+ 
+-[![Play](https://img.shields.io/badge/▶_PLAY-LIVE_DEMO-file:///Users/jongurakuqi/Library/Mobile%20Documents/com~apple~CloudDocs/index%202.html
++[![Play](https://img.shields.io/badge/▶_PLAY-LIVE_DEMO-fac000?style=for-the-badge)](https://jongurakuqi.github.io/Super-Mario-Game-IUBI/)
+ [![License](https://img.shields.io/badge/License-MIT-fac000?style=for-the-badge)](LICENSE)
+ [![Made with JavaScript](https://img.shields.io/badge/Made_with-Vanilla_JS-5c94fc?style=for-the-badge&logo=javascript&logoColor=white)](#)
+ [![HTML5 Canvas](https://img.shields.io/badge/HTML5-Canvas-00a800?style=for-the-badge&logo=html5&logoColor=white)](#)
+@@ -16,7 +16,7 @@
+ 
+ ## ▶️ Watch the Live Demo
+ 
+-> ### 👉 **[CLICK HERE TO PLAY IN YOUR BROWSER](https://jongurakuqi.github.io/super-iubi-bros/)** 👈
++> ### 👉 **[CLICK HERE TO PLAY IN YOUR BROWSER](https://jongurakuqi.github.io/Super-Mario-Game-IUBI/)** 👈
+ 
+ No download, no install - the full game runs instantly on desktop and mobile.
+ 
+@@ -42,6 +42,8 @@ Frankly, this is a love letter to the original Super Mario Bros, constructed pix
+ - **Classic set pieces** - glowing `?` blocks, breakable bricks, green warp pipes, spinning coins, hills, bushes, and parallax clouds
+ - **Real platformer physics** - momentum, gravity, variable jump, block bumps, and stomp mechanics
+ - **Full game loop** - score, coin counter, lives, countdown timer, win screen, and game-over screen
++- **🎓 IUBI Edition** - collect the four glowing **I-U-B-I** letter badges scattered across the course, fly the IUBI banner at the flagpole and castle, and read IUBI facts on the win/lose screens
++- **Chiptune sound** - jump, coin, stomp, and victory sound effects generated live with the WebAudio API (zero audio files)
+ - **Cross-platform controls** - keyboard plus on-screen touch buttons for mobile
+ 
+ ---
+@@ -54,7 +56,7 @@ Frankly, this is a love letter to the original Super Mario Bros, constructed pix
+ | Move right | `→` or `D` | ▶ button |
+ | Jump | `Space`, `↑`, or `W` | A button |
+ 
+-**Goal:** Stomp the Goombas, grab the coins, beat the clock, and reach the flagpole.
++**Goal:** Stomp the Goombas, grab the coins, collect all four **IUBI** letters, beat the clock, and reach the flagpole.
+ 
+ ---
+ 
+@@ -64,10 +66,10 @@ No installation required. You only need a modern web browser.
+ 
+ ### Option 1 - Just open it
+ ```bash
+-git clone https://github.com/JonGurakuqi/super-iubi-bros.git
+-cd super-iubi-bros
++git clone https://github.com/JonGurakuqi/Super-Mario-Game-IUBI.git
++cd Super-Mario-Game-IUBI
+ ```
+-Then double-click `super-iubi-bros.html`.
++Then double-click `index.html`.
+ 
+ ### Option 2 - Run a local server (recomended)
+ A local server avoids any browser security quirks:
+@@ -91,9 +93,9 @@ Hosting this on GitHub Pages is free and takes about a minute:
+ 3. Under **Source**, select your default branch (`main`) and the `/ (root)` folder.
+ 4. Click **Save**. Your game goes live at:
+    ```
+-   https://<your-username>.github.io/<repo-name>/
++   https://jongurakuqi.github.io/Super-Mario-Game-IUBI/
+    ```
+-5. Rename `super-iubi-bros.html` to `index.html` so it loads automatically at the root URL.
++5. The game already lives in `index.html`, so it loads automatically at the root URL.
+ 
+ Henceforth, anyone with the link can play - no setup on their end.
+ 
+@@ -112,7 +114,7 @@ Zero dependencies. The whole game is a single self-contained file.
+ ## 📂 Project Structure
+ 
+ ```
+-super-iubi-bros/
++Super-Mario-Game-IUBI/
+ ├── index.html      # The entire game (HTML + CSS + JS)
+ ├── gameplay.gif    # Demo recording shown in this README
+ ├── README.md       # You are here
+@@ -132,7 +134,8 @@ Collision is constructed from simple axis-aligned bounding-box checks against th
+ ## 🗺️ Roadmap
+ 
+ - [ ] Power-ups (Super Mushroom, Fire Flower)
+-- [ ] Sound effects and background music
++- [x] Sound effects (WebAudio chiptune SFX) — background music still to come
++- [x] Collectible IUBI letter badges
+ - [ ] Multiple levels / world map
+ - [ ] Local high-score saving
+ - [ ] Underground and castle themes
+diff --git a/index.html b/index.html
+new file mode 100644
+index 0000000..eba21ab
+--- /dev/null
++++ b/index.html
+@@ -0,0 +1,1086 @@
++<!DOCTYPE html>
++<html lang="en">
++<head>
++<meta charset="UTF-8">
++<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
++<title>🍄 Super IUBI Bros</title>
++<style>
++  :root {
++    --sky: #5c94fc;
++    --iubi-blue: #003a8c;
++    --iubi-gold: #fac000;
++  }
++  * { margin: 0; padding: 0; box-sizing: border-box; }
++  html, body {
++    height: 100%;
++    background: #000;
++    overflow: hidden;
++    font-family: 'Courier New', monospace;
++    -webkit-user-select: none;
++    user-select: none;
++    touch-action: none;
++  }
++  #wrap {
++    position: fixed;
++    inset: 0;
++    display: flex;
++    align-items: center;
++    justify-content: center;
++    background: radial-gradient(circle at 50% 30%, #1a1a3a, #000);
++  }
++  #game {
++    image-rendering: pixelated;
++    image-rendering: crisp-edges;
++    background: var(--sky);
++    box-shadow: 0 0 0 4px #111, 0 0 40px rgba(0,0,0,.8);
++    max-width: 100vw;
++    max-height: 100vh;
++  }
++
++  /* ---- Overlays ---- */
++  .overlay {
++    position: absolute;
++    inset: 0;
++    display: flex;
++    flex-direction: column;
++    align-items: center;
++    justify-content: center;
++    text-align: center;
++    color: #fff;
++    background: rgba(0, 12, 40, .82);
++    padding: 24px;
++    z-index: 20;
++  }
++  .overlay.hidden { display: none; }
++  .title {
++    font-size: clamp(28px, 7vw, 64px);
++    font-weight: 900;
++    letter-spacing: 2px;
++    text-shadow: 3px 3px 0 var(--iubi-blue), 6px 6px 0 rgba(0,0,0,.4);
++    color: var(--iubi-gold);
++    line-height: 1.05;
++  }
++  .subtitle { margin-top: 10px; font-size: clamp(13px, 2.6vw, 20px); color: #9ad; }
++  .btn {
++    margin-top: 26px;
++    padding: 14px 34px;
++    font-family: inherit;
++    font-weight: 900;
++    font-size: clamp(16px, 3vw, 22px);
++    color: #003a8c;
++    background: var(--iubi-gold);
++    border: 4px solid #fff;
++    border-radius: 10px;
++    cursor: pointer;
++    text-transform: uppercase;
++    letter-spacing: 1px;
++    box-shadow: 0 6px 0 #b58a00;
++    transition: transform .06s, box-shadow .06s;
++  }
++  .btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #b58a00; }
++  .hint { margin-top: 22px; font-size: 13px; color: #bcd; line-height: 1.8; max-width: 460px; }
++  .iubi-tag {
++    margin-top: 18px; font-size: 12px; color: var(--iubi-gold);
++    border: 1px dashed var(--iubi-gold); padding: 6px 14px; border-radius: 20px;
++  }
++  .fact {
++    margin-top: 16px; max-width: 480px; font-size: 14px; color: #cfe3ff;
++    background: rgba(255,255,255,.06); padding: 12px 16px; border-radius: 10px;
++    border-left: 4px solid var(--iubi-gold);
++  }
++
++  /* ---- Touch controls ---- */
++  #touch {
++    position: absolute; inset: auto 0 0 0; bottom: 0;
++    display: none; justify-content: space-between;
++    padding: 18px 22px calc(18px + env(safe-area-inset-bottom)); z-index: 15;
++    pointer-events: none;
++  }
++  #touch .pad { display: flex; gap: 14px; pointer-events: auto; }
++  .tbtn {
++    width: 68px; height: 68px; border-radius: 50%;
++    background: rgba(255,255,255,.18); border: 3px solid rgba(255,255,255,.5);
++    color: #fff; font-size: 26px; font-weight: 900;
++    display: flex; align-items: center; justify-content: center;
++    backdrop-filter: blur(2px);
++  }
++  .tbtn:active { background: rgba(250,192,0,.5); }
++  .tbtn.jump { width: 84px; height: 84px; background: rgba(250,192,0,.28); }
++  @media (pointer: coarse) { #touch { display: flex; } }
++</style>
++</head>
++<body>
++<div id="wrap">
++  <canvas id="game" width="256" height="240"></canvas>
++
++  <!-- Start screen -->
++  <div id="startScreen" class="overlay">
++    <div class="title">🍄 SUPER<br>IUBI BROS</div>
++    <div class="subtitle">A pixel platformer powered by IUBI spirit</div>
++    <div class="iubi-tag">★ IUBI EDITION ★ Collect the I-U-B-I letters!</div>
++    <button class="btn" id="startBtn">▶ Play</button>
++    <div class="hint">
++      ← → / A D : Move &nbsp;•&nbsp; SPACE / ↑ / W : Jump<br>
++      Stomp Goombas, grab coins, collect the glowing <b>IUBI</b> letters,<br>
++      and reach the golden flag before time runs out!
++    </div>
++  </div>
++
++  <!-- Win screen -->
++  <div id="winScreen" class="overlay hidden">
++    <div class="title" style="color:#7CFC00">LEVEL CLEAR!</div>
++    <div class="subtitle" id="winStats">Course complete</div>
++    <div class="fact" id="winFact"></div>
++    <button class="btn" id="winBtn">▶ Play Again</button>
++  </div>
++
++  <!-- Game over screen -->
++  <div id="overScreen" class="overlay hidden">
++    <div class="title" style="color:#ff5555">GAME OVER</div>
++    <div class="subtitle" id="overStats">Better luck next run</div>
++    <div class="fact" id="overFact"></div>
++    <button class="btn" id="overBtn">↻ Retry</button>
++  </div>
++
++  <!-- Touch controls -->
++  <div id="touch">
++    <div class="pad">
++      <div class="tbtn" data-key="left">◀</div>
++      <div class="tbtn" data-key="right">▶</div>
++    </div>
++    <div class="pad">
++      <div class="tbtn jump" data-key="jump">A</div>
++    </div>
++  </div>
++</div>
++
++<script>
++"use strict";
++(() => {
++  // ===================================================================
++  //  Super IUBI Bros — single-file NES-style platformer
++  // ===================================================================
++  const canvas = document.getElementById('game');
++  const ctx = canvas.getContext('2d');
++  ctx.imageSmoothingEnabled = false;
++
++  const VW = 256, VH = 240;        // virtual NES resolution
++  const TILE = 16;
++  const GRAVITY = 0.4;
++  const MAX_FALL = 7;
++
++  // IUBI flavour: facts shown on win/lose screens
++  const IUBI_FACTS = [
++    "IUBI — where curiosity levels up every single day.",
++    "Tip: at IUBI, every jump forward is a lesson learned.",
++    "Collect knowledge like coins — it compounds!",
++    "I-U-B-I: four letters, infinite possibilities.",
++    "Teamwork makes the pipe dream work. Go IUBI!",
++    "Stay golden — like an IUBI coin block.",
++  ];
++  const randFact = () => IUBI_FACTS[(Math.random() * IUBI_FACTS.length) | 0];
++
++  // ---- Color palette (NES-ish) ----
++  const C = {
++    sky: '#5c94fc', ground: '#c84c0c', groundTop: '#e09040',
++    groundDark: '#8c2c00', brick: '#c84c0c', brickLine: '#000',
++    block: '#fac000', blockHi: '#ffe070', blockSh: '#b58a00',
++    pipe: '#00a800', pipeHi: '#7cfc7c', pipeSh: '#006000',
++    coin: '#fac000', white: '#fff', black: '#000',
++    skin: '#ffccaa', red: '#d82800', redDk: '#a01800',
++    blue: '#003a8c', brown: '#6b3e00', goomba: '#a05000', goombaDk: '#5a2c00',
++    cloud: '#fff', hill: '#00a800', hillDk: '#007000', bush: '#00a800',
++  };
++
++  // ===================================================================
++  //  Input
++  // ===================================================================
++  const keys = { left: false, right: false, jump: false };
++  const keyMap = {
++    ArrowLeft: 'left', KeyA: 'left',
++    ArrowRight: 'right', KeyD: 'right',
++    Space: 'jump', ArrowUp: 'jump', KeyW: 'jump',
++  };
++  addEventListener('keydown', e => {
++    const k = keyMap[e.code];
++    if (k) { keys[k] = true; e.preventDefault(); }
++  });
++  addEventListener('keyup', e => {
++    const k = keyMap[e.code];
++    if (k) { keys[k] = false; e.preventDefault(); }
++  });
++  document.querySelectorAll('.tbtn').forEach(btn => {
++    const k = btn.dataset.key;
++    const on = e => { e.preventDefault(); keys[k] = true; };
++    const off = e => { e.preventDefault(); keys[k] = false; };
++    btn.addEventListener('touchstart', on, { passive: false });
++    btn.addEventListener('touchend', off, { passive: false });
++    btn.addEventListener('touchcancel', off, { passive: false });
++    btn.addEventListener('mousedown', on);
++    btn.addEventListener('mouseup', off);
++    btn.addEventListener('mouseleave', off);
++  });
++
++  // ===================================================================
++  //  Tiny WebAudio sound engine (no assets)
++  // ===================================================================
++  let AC = null;
++  function ac() { if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)(); return AC; }
++  function beep(freq, dur, type = 'square', vol = 0.08, slideTo = null) {
++    try {
++      const a = ac();
++      const o = a.createOscillator(), g = a.createGain();
++      o.type = type; o.frequency.value = freq;
++      if (slideTo) o.frequency.linearRampToValueAtTime(slideTo, a.currentTime + dur);
++      g.gain.value = vol;
++      g.gain.exponentialRampToValueAtTime(0.0001, a.currentTime + dur);
++      o.connect(g); g.connect(a.destination);
++      o.start(); o.stop(a.currentTime + dur);
++    } catch (e) {}
++  }
++  const SFX = {
++    jump:  () => beep(420, 0.16, 'square', 0.07, 720),
++    coin:  () => { beep(988, 0.07, 'square', 0.08); setTimeout(() => beep(1319, 0.12, 'square', 0.08), 70); },
++    stomp: () => beep(180, 0.12, 'square', 0.09, 90),
++    bump:  () => beep(160, 0.08, 'square', 0.06, 110),
++    letter:() => { beep(660,0.06,'square',0.09); setTimeout(()=>beep(880,0.06,'square',0.09),60); setTimeout(()=>beep(1320,0.14,'square',0.09),120); },
++    die:   () => { beep(400, 0.2, 'square', 0.09, 120); setTimeout(() => beep(200, 0.5, 'square', 0.09, 60), 200); },
++    win:   () => { [523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,0.18,'square',0.09),i*150)); },
++  };
++
++  // ===================================================================
++  //  Level definition
++  //  Ground gaps, blocks (? and brick), pipes, enemies, coins, letters
++  // ===================================================================
++  const LEVEL_W = 220 * TILE;       // world width in px
++  const FLOOR_Y = VH - 2 * TILE;    // top of ground row
++
++  function buildLevel() {
++    // ground: list of [startTile, endTile] solid segments (with gaps)
++    const ground = [
++      [0, 68], [71, 85], [89, 130], [134, 168], [171, 220],
++    ];
++    const blocks = [];
++    const addBlock = (tx, ty, type) => blocks.push({
++      x: tx * TILE, y: ty * TILE, w: TILE, h: TILE, type, // 'q' | 'brick' | 'used'
++      bump: 0, hit: false,
++    });
++
++    // First cluster
++    addBlock(16, 9, 'q');
++    addBlock(20, 9, 'brick');
++    addBlock(21, 9, 'q');
++    addBlock(22, 9, 'brick');
++    addBlock(23, 9, 'q');
++    addBlock(22, 5, 'q');
++    // staircase-ish bricks
++    addBlock(40, 9, 'brick'); addBlock(41, 9, 'q'); addBlock(42, 9, 'brick');
++    addBlock(48, 6, 'q'); addBlock(49, 6, 'brick');
++    // floating row over a gap
++    addBlock(78, 8, 'brick'); addBlock(79, 8, 'q'); addBlock(80, 8, 'brick');
++    addBlock(100, 9, 'q'); addBlock(104, 7, 'brick'); addBlock(105, 7, 'q'); addBlock(106, 7, 'brick');
++    addBlock(120, 9, 'q'); addBlock(121, 5, 'q');
++    addBlock(150, 8, 'brick'); addBlock(151, 8, 'brick'); addBlock(152, 8, 'q');
++    addBlock(185, 9, 'q'); addBlock(186, 9, 'brick'); addBlock(190, 6, 'q');
++
++    // pipes: {x tile, height in tiles}
++    const pipes = [
++      { tx: 30, h: 2 }, { tx: 55, h: 3 }, { tx: 96, h: 2 }, { tx: 160, h: 4 }, { tx: 178, h: 2 },
++    ];
++
++    // enemies (goombas) — x in px, start positions
++    const enemies = [
++      24, 44, 58, 80, 102, 103, 125, 152, 153, 188, 200,
++    ].map(tx => ({
++      x: tx * TILE, y: FLOOR_Y - TILE, w: TILE, h: TILE,
++      vx: -0.5, vy: 0, alive: true, squashT: 0,
++    }));
++
++    // coins (free-floating) — [tx, ty]
++    const coins = [
++      [17, 6], [18, 6], [19, 6], [42, 4], [50, 4], [79, 5],
++      [105, 4], [121, 3], [126, 6], [140, 6], [155, 5], [195, 4],
++    ].map(([tx, ty]) => ({ x: tx * TILE + 2, y: ty * TILE, w: 12, h: 14, t: Math.random() * 6, taken: false }));
++
++    // IUBI letters — the signature collectible. Spread across the level.
++    const letterDefs = [
++      { ch: 'I', tx: 26, ty: 5 },
++      { ch: 'U', tx: 85, ty: 4 },
++      { ch: 'B', tx: 138, ty: 4 },
++      { ch: 'I', tx: 205, ty: 5 },
++    ];
++    const letters = letterDefs.map(d => ({
++      ch: d.ch, x: d.tx * TILE, y: d.ty * TILE, w: TILE, h: TILE,
++      t: Math.random() * 6, taken: false,
++    }));
++
++    // flag at the end
++    const flag = { x: 215 * TILE, baseY: FLOOR_Y, height: 9 * TILE };
++
++    // decorations
++    const clouds = [[10,3],[28,2],[50,4],[72,2],[95,3],[120,2],[145,4],[170,2],[195,3]]
++      .map(([tx,ty]) => ({ x: tx*TILE, y: ty*TILE }));
++    const hills = [[5,'big'],[60,'small'],[110,'big'],[165,'small']]
++      .map(([tx,s]) => ({ x: tx*TILE, big: s==='big' }));
++    const bushes = [[14],[40],[88],[130],[180]].map(([tx]) => ({ x: tx*TILE }));
++
++    return { ground, blocks, pipes, enemies, coins, letters, flag, clouds, hills, bushes };
++  }
++
++  // ===================================================================
++  //  Game state
++  // ===================================================================
++  let level, player, cam, particles, state, time, score, coinCount, lettersGot, lives, frame, flagAnim;
++
++  function resetPlayer() {
++    player = {
++      x: 2 * TILE, y: FLOOR_Y - TILE, w: 12, h: 15,
++      vx: 0, vy: 0, dir: 1, onGround: false,
++      jumpHeld: false, walkT: 0, dead: false, deadT: 0, win: false,
++    };
++  }
++
++  function newGame() {
++    level = buildLevel();
++    cam = { x: 0 };
++    particles = [];
++    state = 'play';
++    time = 300;
++    score = 0;
++    coinCount = 0;
++    lettersGot = 0;
++    lives = 3;
++    frame = 0;
++    flagAnim = 0;
++    resetPlayer();
++    hideAllOverlays();
++    try { ac().resume(); } catch (e) {}
++  }
++
++  function loseLife() {
++    lives--;
++    if (lives <= 0) {
++      state = 'over';
++      SFX.die();
++      showOver();
++    } else {
++      player.dead = true;
++      player.deadT = 0;
++      player.vy = -7;
++      SFX.die();
++    }
++  }
++
++  function respawn() {
++    // reset to start, keep score/letters
++    cam.x = 0;
++    time = 300;
++    resetPlayer();
++  }
++
++  // ===================================================================
++  //  Collision helpers
++  // ===================================================================
++  function isGroundAt(px) {
++    const tx = Math.floor(px / TILE);
++    return level.ground.some(([s, e]) => tx >= s && tx < e);
++  }
++  function rectsOverlap(a, b) {
++    return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
++  }
++  function pipeRects() {
++    return level.pipes.map(p => ({
++      x: p.tx * TILE, y: FLOOR_Y - p.h * TILE, w: 2 * TILE, h: p.h * TILE,
++    }));
++  }
++  // solid rectangles = blocks + pipes
++  function solidRects() {
++    const rs = [];
++    for (const b of level.blocks) rs.push(b);
++    for (const p of pipeRects()) rs.push(p);
++    return rs;
++  }
++
++  // ===================================================================
++  //  Update
++  // ===================================================================
++  function update() {
++    frame++;
++    if (state !== 'play') return;
++
++    // timer
++    if (frame % 24 === 0 && !player.dead) {
++      time--;
++      if (time <= 0) { time = 0; loseLife(); }
++    }
++
++    if (player.dead) {
++      player.deadT++;
++      player.vy += GRAVITY;
++      player.y += player.vy;
++      if (player.deadT > 70) respawn();
++      return;
++    }
++
++    if (player.win) { updateWinSequence(); return; }
++
++    updatePlayer();
++    updateEnemies();
++    updateCoinsAndLetters();
++    updateParticles();
++  }
++
++  function updatePlayer() {
++    const p = player;
++    const ACC = 0.5, FRICTION = 0.7, MAXV = 2.2;
++
++    if (keys.left)  { p.vx -= ACC; p.dir = -1; }
++    if (keys.right) { p.vx += ACC; p.dir = 1; }
++    if (!keys.left && !keys.right) p.vx *= FRICTION;
++    p.vx = Math.max(-MAXV, Math.min(MAXV, p.vx));
++    if (Math.abs(p.vx) < 0.05) p.vx = 0;
++
++    // jump (variable height)
++    if (keys.jump && p.onGround && !p.jumpHeld) {
++      p.vy = -7; p.onGround = false; p.jumpHeld = true; SFX.jump();
++    }
++    if (!keys.jump) p.jumpHeld = false;
++    if (!keys.jump && p.vy < -3) p.vy = -3; // cut jump
++
++    p.vy += GRAVITY;
++    if (p.vy > MAX_FALL) p.vy = MAX_FALL;
++
++    // --- horizontal move + collide ---
++    p.x += p.vx;
++    if (p.x < 0) { p.x = 0; p.vx = 0; }
++    if (p.x + p.w > LEVEL_W) { p.x = LEVEL_W - p.w; p.vx = 0; }
++    for (const s of solidRects()) {
++      if (rectsOverlap(p, s)) {
++        if (p.vx > 0) p.x = s.x - p.w;
++        else if (p.vx < 0) p.x = s.x + s.w;
++        p.vx = 0;
++      }
++    }
++
++    // --- vertical move + collide ---
++    p.y += p.vy;
++    p.onGround = false;
++
++    // ground segments
++    if (p.vy >= 0) {
++      const footY = p.y + p.h;
++      if (footY >= FLOOR_Y && footY <= FLOOR_Y + p.vy + 1) {
++        const leftSolid = isGroundAt(p.x + 2);
++        const rightSolid = isGroundAt(p.x + p.w - 2);
++        if (leftSolid || rightSolid) {
++          p.y = FLOOR_Y - p.h; p.vy = 0; p.onGround = true;
++        }
++      }
++    }
++    // blocks + pipes
++    for (const s of solidRects()) {
++      if (rectsOverlap(p, s)) {
++        if (p.vy > 0) { p.y = s.y - p.h; p.vy = 0; p.onGround = true; }
++        else if (p.vy < 0) {
++          p.y = s.y + s.h; p.vy = 0;
++          if (s.type) hitBlock(s);   // only blocks have .type
++          else SFX.bump();
++        }
++      }
++    }
++
++    // fell in a gap
++    if (p.y > VH + 40) loseLife();
++
++    // walk animation
++    if (Math.abs(p.vx) > 0.3 && p.onGround) p.walkT += Math.abs(p.vx) * 0.3;
++    else p.walkT = 0;
++
++    // reached flag?
++    if (p.x + p.w >= level.flag.x) startWin();
++
++    // camera follows
++    const target = p.x - VW * 0.4;
++    cam.x = Math.max(0, Math.min(target, LEVEL_W - VW));
++  }
++
++  function hitBlock(b) {
++    if (b.type === 'used') { SFX.bump(); return; }
++    b.bump = 6;
++    if (b.type === 'q') {
++      b.type = 'used'; b.hit = true;
++      coinCount++; score += 200; SFX.coin();
++      spawnCoinPop(b.x + TILE / 2, b.y);
++    } else if (b.type === 'brick') {
++      SFX.bump();
++      score += 10;
++      // bricks just bump in this build
++    }
++  }
++
++  function spawnCoinPop(x, y) {
++    particles.push({ kind: 'coinpop', x, y, vy: -3.4, t: 0 });
++  }
++
++  function updateEnemies() {
++    const solids = solidRects();
++    for (const e of level.enemies) {
++      if (!e.alive) {
++        if (e.squashT > 0) e.squashT--;
++        continue;
++      }
++      e.vy += GRAVITY;
++      if (e.vy > MAX_FALL) e.vy = MAX_FALL;
++
++      // horizontal
++      e.x += e.vx;
++      // turn at solids
++      for (const s of solids) {
++        if (rectsOverlap(e, s)) {
++          if (e.vx > 0) e.x = s.x - e.w; else e.x = s.x + s.w;
++          e.vx = -e.vx;
++        }
++      }
++      // turn at edges/gaps
++      const aheadX = e.vx > 0 ? e.x + e.w + 1 : e.x - 1;
++      if (!isGroundAt(aheadX) && !solids.some(s => aheadX > s.x && aheadX < s.x + s.w && Math.abs((e.y+e.h)-s.y) < 4)) {
++        // only flip if currently on the ground row
++        if (Math.abs((e.y + e.h) - FLOOR_Y) < 2) e.vx = -e.vx;
++      }
++
++      // vertical
++      e.y += e.vy;
++      // land on ground
++      if (e.vy >= 0) {
++        const footY = e.y + e.h;
++        if (footY >= FLOOR_Y && (isGroundAt(e.x + 2) || isGroundAt(e.x + e.w - 2))) {
++          e.y = FLOOR_Y - e.h; e.vy = 0;
++        }
++      }
++      for (const s of solids) {
++        if (rectsOverlap(e, s) && e.vy > 0) { e.y = s.y - e.h; e.vy = 0; }
++      }
++      if (e.y > VH + 40) e.alive = false;
++
++      // collide with player
++      const p = player;
++      if (rectsOverlap(p, e)) {
++        const stomp = p.vy > 0 && (p.y + p.h) - e.y < 10;
++        if (stomp) {
++          e.alive = false; e.squashT = 18;
++          p.vy = -5; score += 100; SFX.stomp();
++        } else {
++          loseLife();
++          return;
++        }
++      }
++    }
++  }
++
++  function updateCoinsAndLetters() {
++    for (const c of level.coins) {
++      if (c.taken) continue;
++      c.t += 0.15;
++      if (rectsOverlap(player, c)) {
++        c.taken = true; coinCount++; score += 100; SFX.coin();
++        spawnFloatText(c.x, c.y, '+100');
++      }
++    }
++    for (const L of level.letters) {
++      if (L.taken) continue;
++      L.t += 0.12;
++      if (rectsOverlap(player, L)) {
++        L.taken = true; lettersGot++; score += 500; SFX.letter();
++        spawnFloatText(L.x - 4, L.y, L.ch + '!');
++      }
++    }
++  }
++
++  function spawnFloatText(x, y, text) {
++    particles.push({ kind: 'text', x, y, text, t: 0 });
++  }
++
++  function updateParticles() {
++    for (const pt of particles) {
++      pt.t++;
++      if (pt.kind === 'coinpop') { pt.vy += 0.25; pt.y += pt.vy; }
++      if (pt.kind === 'text') pt.y -= 0.6;
++    }
++    particles = particles.filter(pt => pt.t < (pt.kind === 'text' ? 50 : 30));
++  }
++
++  // ---- win sequence (slide down flag, walk to castle) ----
++  function startWin() {
++    if (player.win) return;
++    player.win = true;
++    player.winPhase = 'slide';
++    player.vx = 0; player.vy = 0;
++    SFX.win();
++    score += time * 10;
++  }
++  function updateWinSequence() {
++    const p = player;
++    flagAnim = Math.min(flagAnim + 2, level.flag.height - TILE);
++    if (p.winPhase === 'slide') {
++      p.x = level.flag.x - p.w + 2;
++      if (p.y + p.h < FLOOR_Y) p.y += 2;
++      else { p.y = FLOOR_Y - p.h; p.winPhase = 'walk'; }
++    } else {
++      p.x += 1.2; p.walkT += 0.4;
++      if (p.x > level.flag.x + 5 * TILE) { state = 'win'; showWin(); }
++    }
++    cam.x = Math.max(0, Math.min(p.x - VW * 0.4, LEVEL_W - VW));
++  }
++
++  // ===================================================================
++  //  Rendering
++  // ===================================================================
++  function px(x) { return Math.round(x - cam.x); }
++
++  function draw() {
++    // sky
++    ctx.fillStyle = C.sky;
++    ctx.fillRect(0, 0, VW, VH);
++
++    drawClouds();
++    drawHills();
++    drawBushes();
++    drawPipes();
++    drawGround();
++    drawBlocks();
++    drawCoins();
++    drawLetters();
++    drawFlag();
++    drawEnemies();
++    if (!player.win || player.winPhase) drawPlayer();
++    drawParticles();
++    drawHUD();
++  }
++
++  function drawClouds() {
++    ctx.fillStyle = C.cloud;
++    for (const c of level.clouds) {
++      const x = px(c.x), y = c.y;
++      if (x < -50 || x > VW + 50) continue;
++      blob(x, y, 24, 10);
++      blob(x + 10, y - 6, 18, 10);
++      blob(x + 22, y, 22, 10);
++    }
++  }
++  function blob(x, y, w, h) {
++    ctx.beginPath();
++    ctx.ellipse(x + w/2, y + h/2, w/2, h/2, 0, 0, Math.PI*2);
++    ctx.fill();
++  }
++
++  function drawHills() {
++    for (const h of level.hills) {
++      const x = px(h.x), base = FLOOR_Y;
++      if (x < -120 || x > VW + 60) continue;
++      const w = h.big ? 96 : 56, ht = h.big ? 48 : 30;
++      ctx.fillStyle = C.hill;
++      ctx.beginPath();
++      ctx.moveTo(x, base);
++      ctx.quadraticCurveTo(x + w/2, base - ht, x + w, base);
++      ctx.closePath(); ctx.fill();
++      ctx.fillStyle = C.hillDk;
++      ctx.fillRect(x + w/2 - 2, base - ht + 6, 4, 4);
++    }
++  }
++
++  function drawBushes() {
++    ctx.fillStyle = C.bush;
++    for (const b of level.bushes) {
++      const x = px(b.x), y = FLOOR_Y - 12;
++      if (x < -60 || x > VW + 60) continue;
++      blob(x, y, 18, 16); blob(x + 12, y - 4, 20, 18); blob(x + 26, y, 18, 16);
++      ctx.fillRect(x, y + 6, 44, 8);
++    }
++  }
++
++  function drawGround() {
++    for (const [s, e] of level.ground) {
++      const x0 = px(s * TILE), w = (e - s) * TILE;
++      if (x0 + w < 0 || x0 > VW) continue;
++      ctx.fillStyle = C.groundTop; ctx.fillRect(x0, FLOOR_Y, w, 4);
++      ctx.fillStyle = C.ground; ctx.fillRect(x0, FLOOR_Y + 4, w, 2 * TILE - 4);
++      // brick texture
++      ctx.fillStyle = C.groundDark;
++      for (let bx = 0; bx < w; bx += 16) {
++        ctx.fillRect(x0 + bx, FLOOR_Y + 4, 1, 2*TILE - 4);
++        ctx.fillRect(x0 + bx + 8, FLOOR_Y + 12, 1, 2*TILE - 12);
++      }
++      ctx.fillRect(x0, FLOOR_Y + 12, w, 1);
++    }
++  }
++
++  function drawBlocks() {
++    for (const b of level.blocks) {
++      const x = px(b.x), y = b.y - b.bump;
++      if (b.bump > 0) b.bump--;
++      if (x < -TILE || x > VW) continue;
++      if (b.type === 'q' || (b.type === 'used' && !b.hit)) {
++        // question block
++        ctx.fillStyle = C.block; ctx.fillRect(x, y, TILE, TILE);
++        ctx.fillStyle = C.blockHi; ctx.fillRect(x+1, y+1, TILE-2, 2);
++        ctx.fillStyle = C.blockSh; ctx.fillRect(x+1, y+TILE-3, TILE-2, 2);
++        ctx.fillStyle = '#fff'; ctx.font = 'bold 11px monospace';
++        ctx.textAlign = 'center'; ctx.fillText('?', x + TILE/2, y + 12);
++        rivets(x, y);
++      } else if (b.type === 'used') {
++        ctx.fillStyle = C.blockSh; ctx.fillRect(x, y, TILE, TILE);
++        ctx.fillStyle = '#8a6a00'; ctx.fillRect(x+1, y+1, TILE-2, TILE-2);
++        rivets(x, y);
++      } else if (b.type === 'brick') {
++        ctx.fillStyle = C.brick; ctx.fillRect(x, y, TILE, TILE);
++        ctx.fillStyle = '#000';
++        ctx.fillRect(x, y + 4, TILE, 1);
++        ctx.fillRect(x, y + 11, TILE, 1);
++        ctx.fillRect(x + 8, y, 1, 4);
++        ctx.fillRect(x + 4, y + 5, 1, 6);
++        ctx.fillRect(x + 12, y + 5, 1, 6);
++        ctx.fillRect(x + 8, y + 12, 1, 4);
++      }
++    }
++  }
++  function rivets(x, y) {
++    ctx.fillStyle = '#7a5c00';
++    ctx.fillRect(x+1, y+1, 1, 1); ctx.fillRect(x+TILE-2, y+1, 1, 1);
++    ctx.fillRect(x+1, y+TILE-2, 1, 1); ctx.fillRect(x+TILE-2, y+TILE-2, 1, 1);
++  }
++
++  function drawPipes() {
++    for (const p of level.pipes) {
++      const x = px(p.tx * TILE), y = FLOOR_Y - p.h * TILE, w = 2*TILE, h = p.h*TILE;
++      if (x + w < 0 || x > VW) continue;
++      // body
++      ctx.fillStyle = C.pipe; ctx.fillRect(x, y + 12, w, h - 12);
++      ctx.fillStyle = C.pipeHi; ctx.fillRect(x + 2, y + 12, 4, h - 12);
++      ctx.fillStyle = C.pipeSh; ctx.fillRect(x + w - 5, y + 12, 4, h - 12);
++      // lip
++      ctx.fillStyle = C.pipe; ctx.fillRect(x - 2, y, w + 4, 12);
++      ctx.fillStyle = C.pipeHi; ctx.fillRect(x, y + 2, 4, 8);
++      ctx.fillStyle = C.pipeSh; ctx.fillRect(x + w - 3, y + 2, 4, 8);
++      ctx.fillStyle = '#000'; ctx.fillRect(x - 2, y, w + 4, 1);
++    }
++  }
++
++  function drawCoins() {
++    for (const c of level.coins) {
++      if (c.taken) continue;
++      const x = px(c.x), y = c.y;
++      if (x < -TILE || x > VW) continue;
++      const sw = Math.abs(Math.cos(c.t)) * 8 + 2; // spin
++      ctx.fillStyle = C.coin;
++      ctx.fillRect(x + 6 - sw/2, y, sw, 14);
++      ctx.fillStyle = C.blockHi;
++      ctx.fillRect(x + 6 - sw/2, y + 2, Math.max(1, sw/3), 10);
++      ctx.fillStyle = C.blockSh;
++      ctx.fillRect(x + 6 + sw/2 - 1, y + 2, 1, 10);
++    }
++  }
++
++  function drawLetters() {
++    for (const L of level.letters) {
++      if (L.taken) continue;
++      const x = px(L.x), y = L.y + Math.sin(L.t) * 2;
++      if (x < -TILE || x > VW) continue;
++      // glowing rounded badge in IUBI colors
++      const pulse = (Math.sin(L.t * 1.5) + 1) / 2;
++      ctx.save();
++      ctx.shadowColor = 'rgba(250,192,0,' + (0.5 + pulse * 0.5) + ')';
++      ctx.shadowBlur = 8 + pulse * 6;
++      ctx.fillStyle = C.blue;
++      roundRect(x, y, TILE, TILE, 4); ctx.fill();
++      ctx.shadowBlur = 0;
++      ctx.strokeStyle = C.block; ctx.lineWidth = 1.5;
++      roundRect(x + 1, y + 1, TILE - 2, TILE - 2, 3); ctx.stroke();
++      ctx.fillStyle = C.block;
++      ctx.font = 'bold 12px monospace'; ctx.textAlign = 'center';
++      ctx.fillText(L.ch, x + TILE/2, y + 12);
++      ctx.restore();
++    }
++  }
++  function roundRect(x, y, w, h, r) {
++    ctx.beginPath();
++    ctx.moveTo(x + r, y);
++    ctx.arcTo(x + w, y, x + w, y + h, r);
++    ctx.arcTo(x + w, y + h, x, y + h, r);
++    ctx.arcTo(x, y + h, x, y, r);
++    ctx.arcTo(x, y, x + w, y, r);
++    ctx.closePath();
++  }
++
++  function drawFlag() {
++    const f = level.flag;
++    const poleX = px(f.x + TILE/2);
++    if (poleX < -40 || poleX > VW + 60) return;
++    const topY = f.baseY - f.height;
++    // pole
++    ctx.fillStyle = '#bcbcbc';
++    ctx.fillRect(poleX - 1, topY, 3, f.height);
++    // ball
++    ctx.fillStyle = C.block;
++    ctx.beginPath(); ctx.arc(poleX, topY, 3, 0, Math.PI*2); ctx.fill();
++    // flag (IUBI banner)
++    const fy = topY + 4 + flagAnim;
++    ctx.fillStyle = C.blue;
++    ctx.beginPath();
++    ctx.moveTo(poleX - 1, fy);
++    ctx.lineTo(poleX - 22, fy + 7);
++    ctx.lineTo(poleX - 1, fy + 14);
++    ctx.closePath(); ctx.fill();
++    ctx.fillStyle = C.block; ctx.font = 'bold 8px monospace'; ctx.textAlign = 'center';
++    ctx.fillText('IUBI', poleX - 11, fy + 10);
++    // castle behind
++    drawCastle(px(f.x + 8 * TILE), f.baseY);
++  }
++
++  function drawCastle(x, base) {
++    if (x < -80 || x > VW + 80) return;
++    const w = 64, h = 56;
++    ctx.fillStyle = C.brick;
++    ctx.fillRect(x, base - h, w, h);
++    // battlements
++    for (let i = 0; i < w; i += 16) ctx.fillRect(x + i, base - h - 6, 10, 6);
++    // door
++    ctx.fillStyle = '#000';
++    ctx.fillRect(x + w/2 - 7, base - 18, 14, 18);
++    ctx.beginPath(); ctx.arc(x + w/2, base - 18, 7, Math.PI, 0); ctx.fill();
++    // towers
++    ctx.fillStyle = C.brick;
++    ctx.fillRect(x - 8, base - h + 8, 14, h - 8);
++    ctx.fillRect(x + w - 6, base - h + 8, 14, h - 8);
++    for (let i = 0; i < 14; i += 7) {
++      ctx.fillRect(x - 8 + i, base - h + 2, 5, 6);
++      ctx.fillRect(x + w - 6 + i, base - h + 2, 5, 6);
++    }
++    // little IUBI flag on top
++    ctx.fillStyle = C.blue;
++    ctx.fillRect(x + w/2 - 1, base - h - 18, 2, 12);
++    ctx.fillRect(x + w/2 + 1, base - h - 18, 10, 6);
++    // brick lines
++    ctx.fillStyle = 'rgba(0,0,0,.25)';
++    for (let yy = base - h + 12; yy < base; yy += 8) ctx.fillRect(x, yy, w, 1);
++  }
++
++  function drawEnemies() {
++    for (const e of level.enemies) {
++      const x = px(e.x), y = e.y;
++      if (x < -TILE || x > VW) continue;
++      if (!e.alive) {
++        if (e.squashT > 0) {
++          ctx.fillStyle = C.goomba;
++          ctx.fillRect(x, y + TILE - 5, TILE, 5);
++          ctx.fillStyle = C.goombaDk;
++          ctx.fillRect(x + 2, y + TILE - 5, 3, 2);
++          ctx.fillRect(x + TILE - 5, y + TILE - 5, 3, 2);
++        }
++        continue;
++      }
++      // body
++      ctx.fillStyle = C.goomba;
++      ctx.fillRect(x + 1, y + 2, TILE - 2, TILE - 6);
++      ctx.fillStyle = C.goomba;
++      blob(x, y + 1, TILE, 12);
++      // feet
++      const step = Math.floor(frame / 10) % 2;
++      ctx.fillStyle = C.goombaDk;
++      ctx.fillRect(x + (step ? 1 : 3), y + TILE - 3, 5, 3);
++      ctx.fillRect(x + (step ? TILE - 6 : TILE - 8), y + TILE - 3, 5, 3);
++      // eyes
++      ctx.fillStyle = '#fff';
++      ctx.fillRect(x + 3, y + 4, 3, 4);
++      ctx.fillRect(x + TILE - 6, y + 4, 3, 4);
++      ctx.fillStyle = '#000';
++      ctx.fillRect(x + 4, y + 5, 1, 2);
++      ctx.fillRect(x + TILE - 5, y + 5, 1, 2);
++      // angry brows
++      ctx.fillStyle = C.goombaDk;
++      ctx.fillRect(x + 2, y + 3, 4, 1);
++      ctx.fillRect(x + TILE - 6, y + 3, 4, 1);
++    }
++  }
++
++  function drawPlayer() {
++    const p = player;
++    const x = px(p.x), y = p.y;
++    ctx.save();
++    // flip for direction
++    if (p.dir < 0) { ctx.translate(x + p.w, 0); ctx.scale(-1, 1); }
++    else ctx.translate(x, 0);
++    const ox = 0;
++
++    const jumping = !p.onGround && !p.win;
++    const step = Math.floor(p.walkT) % 2;
++
++    // ---- Mario-style sprite (IUBI red/blue) ----
++    // hat
++    ctx.fillStyle = C.red; ctx.fillRect(ox + 2, y, 9, 3);
++    ctx.fillRect(ox + 1, y + 3, 11, 2);
++    ctx.fillRect(ox + 8, y + 2, 5, 2); // brim
++    // face
++    ctx.fillStyle = C.skin;
++    ctx.fillRect(ox + 3, y + 5, 8, 5);
++    ctx.fillRect(ox + 9, y + 6, 3, 3); // nose
++    // eye
++    ctx.fillStyle = '#000'; ctx.fillRect(ox + 7, y + 6, 1, 2);
++    // moustache
++    ctx.fillStyle = C.brown; ctx.fillRect(ox + 5, y + 9, 6, 1);
++    // hair sideburn
++    ctx.fillStyle = C.brown; ctx.fillRect(ox + 3, y + 6, 2, 3);
++    // body / overalls (IUBI blue)
++    ctx.fillStyle = C.blue;
++    ctx.fillRect(ox + 2, y + 10, 9, 4);
++    // shirt arms (red)
++    ctx.fillStyle = C.red;
++    if (jumping) {
++      ctx.fillRect(ox + 9, y + 9, 3, 3);   // raised arm
++      ctx.fillRect(ox + 0, y + 10, 3, 3);
++    } else {
++      ctx.fillRect(ox + 0, y + 11, 2, 3);
++      ctx.fillRect(ox + 10, y + 11, 2, 3);
++    }
++    // overall straps
++    ctx.fillStyle = C.blue;
++    ctx.fillRect(ox + 3, y + 9, 2, 2);
++    ctx.fillRect(ox + 7, y + 9, 2, 2);
++    // legs / shoes
++    ctx.fillStyle = C.blue;
++    if (jumping) {
++      ctx.fillRect(ox + 3, y + 13, 4, 2);
++      ctx.fillRect(ox + 7, y + 13, 3, 2);
++      ctx.fillStyle = C.brown;
++      ctx.fillRect(ox + 7, y + 14, 5, 1);
++    } else if (Math.abs(p.vx) > 0.3) {
++      ctx.fillStyle = C.blue;
++      if (step) { ctx.fillRect(ox + 2, y + 13, 4, 2); ctx.fillRect(ox + 8, y + 12, 3, 2); }
++      else { ctx.fillRect(ox + 4, y + 13, 4, 2); ctx.fillRect(ox + 6, y + 12, 3, 2); }
++      ctx.fillStyle = C.brown;
++      ctx.fillRect(ox + 1, y + 14, 5, 1); ctx.fillRect(ox + 9, y + 14, 4, 1);
++    } else {
++      ctx.fillRect(ox + 3, y + 13, 3, 2);
++      ctx.fillRect(ox + 7, y + 13, 3, 2);
++      ctx.fillStyle = C.brown;
++      ctx.fillRect(ox + 2, y + 14, 5, 1); ctx.fillRect(ox + 7, y + 14, 5, 1);
++    }
++    ctx.restore();
++  }
++
++  function drawParticles() {
++    for (const pt of particles) {
++      if (pt.kind === 'coinpop') {
++        const x = px(pt.x), y = pt.y;
++        ctx.fillStyle = C.coin;
++        const sw = Math.abs(Math.cos(pt.t * 0.4)) * 8 + 2;
++        ctx.fillRect(x - sw/2, y, sw, 14);
++      } else if (pt.kind === 'text') {
++        const x = px(pt.x), y = pt.y;
++        ctx.fillStyle = '#fff';
++        ctx.font = 'bold 8px monospace'; ctx.textAlign = 'left';
++        ctx.fillText(pt.text, x, y);
++      }
++    }
++  }
++
++  function drawHUD() {
++    ctx.textAlign = 'left';
++    ctx.font = 'bold 8px monospace';
++    // top bar shadow
++    ctx.fillStyle = 'rgba(0,0,0,.25)';
++    ctx.fillRect(0, 0, VW, 22);
++    ctx.fillStyle = '#fff';
++    ctx.fillText('SCORE', 8, 9);
++    ctx.fillText(String(score).padStart(6, '0'), 8, 18);
++
++    // coins
++    ctx.fillStyle = C.coin; ctx.fillRect(76, 12, 4, 7);
++    ctx.fillStyle = '#fff';
++    ctx.fillText('x' + String(coinCount).padStart(2, '0'), 84, 18);
++    ctx.fillText('COINS', 76, 9);
++
++    // IUBI letters collected
++    ctx.fillText('IUBI', 128, 9);
++    const target = 'IUBI';
++    for (let i = 0; i < 4; i++) {
++      const got = i < lettersGot;
++      ctx.fillStyle = got ? C.block : 'rgba(255,255,255,.3)';
++      ctx.fillText(target[i], 128 + i * 8, 18);
++    }
++
++    // lives
++    ctx.fillStyle = '#fff';
++    ctx.textAlign = 'right';
++    ctx.fillText('x' + lives, VW - 8, 9);
++    // little head icon
++    ctx.fillStyle = C.red; ctx.fillRect(VW - 24, 13, 6, 2);
++    ctx.fillStyle = C.skin; ctx.fillRect(VW - 23, 15, 5, 3);
++
++    // time
++    ctx.fillStyle = '#fff'; ctx.textAlign = 'right';
++    ctx.fillText('TIME', VW - 8, 18);
++    ctx.fillText(String(time).padStart(3, '0'), VW - 8, 26);
++    ctx.textAlign = 'left';
++  }
++
++  // ===================================================================
++  //  Overlays
++  // ===================================================================
++  const startScreen = document.getElementById('startScreen');
++  const winScreen = document.getElementById('winScreen');
++  const overScreen = document.getElementById('overScreen');
++  function hideAllOverlays() {
++    startScreen.classList.add('hidden');
++    winScreen.classList.add('hidden');
++    overScreen.classList.add('hidden');
++  }
++  function showWin() {
++    document.getElementById('winStats').textContent =
++      `Score ${score} • Coins ${coinCount} • IUBI letters ${lettersGot}/4`;
++    document.getElementById('winFact').textContent = randFact();
++    winScreen.classList.remove('hidden');
++  }
++  function showOver() {
++    document.getElementById('overStats').textContent =
++      `Score ${score} • Coins ${coinCount} • IUBI letters ${lettersGot}/4`;
++    document.getElementById('overFact').textContent = randFact();
++    overScreen.classList.remove('hidden');
++  }
++  document.getElementById('startBtn').addEventListener('click', newGame);
++  document.getElementById('winBtn').addEventListener('click', newGame);
++  document.getElementById('overBtn').addEventListener('click', newGame);
++
++  // ===================================================================
++  //  Resize / scale canvas to fit while keeping aspect
++  // ===================================================================
++  function resize() {
++    const scaleX = window.innerWidth / VW;
++    const scaleY = window.innerHeight / VH;
++    const scale = Math.max(1, Math.floor(Math.min(scaleX, scaleY)));
++    canvas.style.width = VW * scale + 'px';
++    canvas.style.height = VH * scale + 'px';
++  }
++  addEventListener('resize', resize);
++  resize();
++
++  // ===================================================================
++  //  Main loop
++  // ===================================================================
++  // initialize a frozen background for the start screen
++  level = buildLevel();
++  cam = { x: 0 };
++  particles = [];
++  state = 'menu';
++  time = 300; score = 0; coinCount = 0; lettersGot = 0; lives = 3; frame = 0; flagAnim = 0;
++  resetPlayer();
++
++  function loop() {
++    if (state === 'play') update();
++    draw();
++    requestAnimationFrame(loop);
++  }
++  loop();
++})();
++</script>
++</body>
++</html>
+-- 
+2.43.0
+

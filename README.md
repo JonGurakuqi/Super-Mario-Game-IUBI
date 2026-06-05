@@ -5,7 +5,7 @@
 
 **No engine. No frameworks. No build step. One single HTML file.**
 
-[![Play](https://img.shields.io/badge/▶_PLAY-LIVE_DEMO-fac000?style=for-the-badge)](https://jongurakuqi.github.io/Super-Mario-Game-IUBI/)
+[![Play](file:///Users/jongurakuqi/Library/Mobile%20Documents/com~apple~CloudDocs/index.html).
 [![License](https://img.shields.io/badge/License-MIT-fac000?style=for-the-badge)](LICENSE)
 [![Made with JavaScript](https://img.shields.io/badge/Made_with-Vanilla_JS-5c94fc?style=for-the-badge&logo=javascript&logoColor=white)](#)
 [![HTML5 Canvas](https://img.shields.io/badge/HTML5-Canvas-00a800?style=for-the-badge&logo=html5&logoColor=white)](#)
